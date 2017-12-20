@@ -77,7 +77,7 @@ class TAPModel(object):
     def _calculate_g(self):
         """eq. 1"""
         for i in self.G.nodes():
-            n = self.G.neighbors(i)
+            n = self.G[i]
             self.g[i] = np.zeros((len(n)+1, self.T))
 
             sumin = np.zeros((self.T))
@@ -109,7 +109,7 @@ class TAPModel(object):
     def _calculate_b(self):
         """eq. 8"""
         for i in self.G.nodes():
-            n = self.G.neighbors(i)
+            n = G[i]
             self.b[i] = np.zeros((len(n)+1, self.T))
             self.r[i] = np.zeros((len(n)+1, self.T))
             self.a[i] = np.zeros((len(n)+1, self.T))
@@ -127,7 +127,7 @@ class TAPModel(object):
         """eq. 5"""
     
         for i in self.G.nodes():
-            n = self.G.neighbors(i)
+            n = G[i]
         
             firstmax = np.zeros((self.T))
             secondmax = np.zeros((self.T))
@@ -175,16 +175,17 @@ class TAPModel(object):
         
             maxk[j] = np.array( [-1] * self.T )
 
-            n = self.G.neighbors(j)
-        
+            n = self.G[j]
+            #print len(n)
             # maxk[N] records the maximum value of min{r z, kj, 0}
             if len(n) < 1:
                 for k in xrange(self.T):
                     firstmax[j][k] = 0.
         
             else:
-                neighbour = n[0]
-                pos = self.G.neighbors(neighbour).index(j)
+                #print n
+                neighbour = n.keys()[0]
+                pos = self.G[neighbour].index(j)
             
                 for k in xrange(self.T):
                     firstmax[j][k] = min( self.r[neighbour][pos, k], 0. )
@@ -213,7 +214,7 @@ class TAPModel(object):
                                 maxk[j][k] = neighbour                                          
 
         for i in self.G.nodes():
-            n = self.G.neighbors(i)
+            n = G[i]
             for k in xrange(self.T): # a_ii
                 self.a[i][len(n), k] = firstmax[i][k]
         
@@ -237,7 +238,7 @@ class TAPModel(object):
 
         dc = 0
         for i in self.G.nodes():
-            n = self.G.neighbors(i)
+            n = G[i]
             for k in xrange(self.T):
                 firstmax = self.r[i][len(n), k] + self.a[i][len(n), k]
                 rep = -1
@@ -279,7 +280,7 @@ class TAPModel(object):
             
             # Influence
             for i in self.G.nodes():
-                n = self.G.neighbors(i)
+                n = G[i]
                 for j in self.G.nodes():
                     if j in n:
                         j_ = n.index(j)
@@ -323,7 +324,7 @@ class TAPModel(object):
                 assert alt_r[i].shape[1] == self.r[i].shape[1]
                 assert alt_a[i].shape[1] == self.a[i].shape[1]
                 
-                n = self.G.neighbors(i)
+                n = G[i]
                 for j in alt_n:
                     if j in n:
                         j_ = n.index(j)
